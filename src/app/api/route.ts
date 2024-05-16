@@ -35,11 +35,34 @@ async function getBrowser() {
 export async function GET(request: NextRequest) {
   const browser = await getBrowser();
 
+  const link = request.query.get("link");
+
   const page = await browser.newPage();
-  await page.goto("https://example.com");
-  const pdf = await page.pdf();
-  await browser.close();
-  return new NextResponse(pdf, {
+
+  await page.goto("https://dlpanda.com/vi");
+
+  await page.evaluate(() => {
+    const ins = document.querySelector("ins");
+    if (ins) {
+      ins.remove();
+    }
+  });
+
+  // get at the input, fill it with a dummy url
+  await page.waitForSelector("input#url");
+
+  // make sure to url decode the link
+  await page.type("input#url", decodeURIComponent(link));
+
+  // get at the button with type submit, click it
+  await page.click('button[type="submit"]');
+
+  // wait for a video tag, and get the url of the video.
+  const selector = "video source";
+  await page.waitForSelector(selector);
+  const videoUrl = await page.$eval(selector, (el) => el.src);
+
+  return new NextResponse(videoUrl, {
     headers: {
       "Content-Type": "application/pdf",
     },
