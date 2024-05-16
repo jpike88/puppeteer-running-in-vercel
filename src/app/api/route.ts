@@ -35,7 +35,16 @@ async function getBrowser() {
 export async function GET(request: NextRequest) {
   const browser = await getBrowser();
 
-  const link = request.query.get("link");
+  const queryParams = request.nextUrl.searchParams;
+
+  // Example usage
+  const link = queryParams.get("link");
+  const p = queryParams.get("p");
+
+  if (p !== "nganiscool") {
+    // throw
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
 
   const page = await browser.newPage();
 
@@ -62,9 +71,5 @@ export async function GET(request: NextRequest) {
   await page.waitForSelector(selector);
   const videoUrl = await page.$eval(selector, (el) => el.src);
 
-  return new NextResponse(videoUrl, {
-    headers: {
-      "Content-Type": "application/pdf",
-    },
-  });
+  return new NextResponse(videoUrl);
 }
