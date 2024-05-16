@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
   await page.goto("https://dlpanda.com/vi");
 
-  await page.evaluate(() => {
+  await (page as any).evaluate(() => {
     const ins = document.querySelector("ins");
     if (ins) {
       ins.remove();
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
   await page.waitForSelector("input#url");
 
   // make sure to url decode the link
-  await page.type("input#url", decodeURIComponent(link));
+  await page.type("input#url", decodeURIComponent(link as string));
 
   // get at the button with type submit, click it
   await page.click('button[type="submit"]');
@@ -69,7 +69,10 @@ export async function GET(request: NextRequest) {
   // wait for a video tag, and get the url of the video.
   const selector = "video source";
   await page.waitForSelector(selector);
-  const videoUrl = await page.$eval(selector, (el) => el.src);
+  const videoUrl = await (page as any).evaluate(
+    selector,
+    (el: HTMLImageElement) => el.src
+  );
 
   return new NextResponse(videoUrl);
 }
